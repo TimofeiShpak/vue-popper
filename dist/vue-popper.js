@@ -1,12 +1,12 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('popper.js')) :
-  typeof define === 'function' && define.amd ? define(['popper.js'], factory) :
-  (global = global || self, global.VuePopper = factory(global.Popper));
-}(this, function (Popper) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('popper.js'), require('vue')) :
+  typeof define === 'function' && define.amd ? define(['popper.js', 'vue'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.VuePopper = factory(global.Popper, global.vue));
+})(this, (function (Popper, vue) { 'use strict';
 
-  Popper = Popper && Popper.hasOwnProperty('default') ? Popper['default'] : Popper;
+  function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
-  //
+  var Popper__default = /*#__PURE__*/_interopDefaultLegacy(Popper);
 
   function on(element, event, handler) {
     if (element && event && handler) {
@@ -87,7 +87,8 @@
       rootClass: {
         type: String,
         "default": ''
-      }
+      },
+      parentSelector: String
     },
     data: function data() {
       return {
@@ -136,16 +137,18 @@
     created: function created() {
       this.appendedArrow = false;
       this.appendedToBody = false;
+      this.parentElement = null;
       this.popperOptions = Object.assign(this.popperOptions, this.options);
     },
     mounted: function mounted() {
-      this.referenceElm = this.reference || this.$slots.reference[0].elm;
-      this.popper = this.$slots["default"][0].elm;
+      this.referenceElm = this.$refs.reference;
+      this.popper = this.$refs.popper.children[0];
 
       switch (this.trigger) {
         case 'clickToOpen':
           on(this.referenceElm, 'click', this.doShow);
           on(document, 'click', this.handleDocumentClick);
+          on(document, 'touchstart', this.handleDocumentClick);
           break;
 
         case 'click': // Same as clickToToggle, provided for backwards compatibility.
@@ -153,6 +156,7 @@
         case 'clickToToggle':
           on(this.referenceElm, 'click', this.doToggle);
           on(document, 'click', this.handleDocumentClick);
+          on(document, 'touchstart', this.handleDocumentClick);
           break;
 
         case 'hover':
@@ -200,7 +204,10 @@
           this.popperJS = null;
         }
 
-        if (this.appendedToBody) {
+        if (this.parentElement) {
+          this.parentElement.removeChild(this.popper.parentElement);
+          this.parentElement = null;
+        } else if (this.appendedToBody) {
           this.appendedToBody = false;
           document.body.removeChild(this.popper.parentElement);
         }
@@ -213,7 +220,13 @@
             _this.appendArrow(_this.popper);
           }
 
-          if (_this.appendToBody && !_this.appendedToBody) {
+          if (_this.parentSelector) {
+            _this.parentElement = document.querySelector(_this.parentSelector);
+          }
+
+          if (_this.parentElement) {
+            _this.parentElement.appendChild(_this.popper.parentElement);
+          } else if (_this.appendToBody && !_this.appendedToBody) {
             _this.appendedToBody = true;
             document.body.appendChild(_this.popper.parentElement);
           }
@@ -238,7 +251,7 @@
             _this.$nextTick(_this.updatePopper);
           };
 
-          _this.popperJS = new Popper(_this.referenceElm, _this.popper, _this.popperOptions);
+          _this.popperJS = new Popper__default["default"](_this.referenceElm, _this.popper, _this.popperOptions);
         });
       },
       destroyPopper: function destroyPopper() {
@@ -309,166 +322,54 @@
     }
   };
 
-  function normalizeComponent(compiledTemplate, injectStyle, defaultExport, scopeId, isFunctionalTemplate, moduleIdentifier
-  /* server only */
-  , isShadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
-    if (typeof isShadowMode === 'function') {
-      createInjectorSSR = createInjector;
-      createInjector = isShadowMode;
-      isShadowMode = false;
-    } // Vue.extend constructor export interop
+  var _hoisted_1 = {
+    ref: "reference"
+  };
+  function render(_ctx, _cache, $props, $setup, $data, $options) {
+    return vue.openBlock(), vue.createBlock(vue.resolveDynamicComponent($props.tagName), {
+      "class": vue.normalizeClass({
+        'popper-active': $data.showPopper
+      })
+    }, {
+      "default": vue.withCtx(function () {
+        return [vue.createVNode(vue.Transition, {
+          name: $props.transition,
+          "enter-active-class": $props.enterActiveClass,
+          "leave-active-class": $props.leaveActiveClass,
+          onAfterLeave: $options.doDestroy,
+          persisted: ""
+        }, {
+          "default": vue.withCtx(function () {
+            return [vue.withDirectives(vue.createElementVNode("span", {
+              ref: "popper",
+              "class": vue.normalizeClass($props.rootClass)
+            }, [vue.renderSlot(_ctx.$slots, "default", {}, function () {
+              return [vue.createTextVNode(vue.toDisplayString($props.content), 1
+              /* TEXT */
+              )];
+            })], 2
+            /* CLASS */
+            ), [[vue.vShow, !$props.disabled && $data.showPopper]])];
+          }),
+          _: 3
+          /* FORWARDED */
 
+        }, 8
+        /* PROPS */
+        , ["name", "enter-active-class", "leave-active-class", "onAfterLeave"]), vue.createElementVNode("div", _hoisted_1, [vue.renderSlot(_ctx.$slots, "reference")], 512
+        /* NEED_PATCH */
+        )];
+      }),
+      _: 3
+      /* FORWARDED */
 
-    const options = typeof defaultExport === 'function' ? defaultExport.options : defaultExport; // render functions
-
-    if (compiledTemplate && compiledTemplate.render) {
-      options.render = compiledTemplate.render;
-      options.staticRenderFns = compiledTemplate.staticRenderFns;
-      options._compiled = true; // functional template
-
-      if (isFunctionalTemplate) {
-        options.functional = true;
-      }
-    } // scopedId
-
-
-    if (scopeId) {
-      options._scopeId = scopeId;
-    }
-
-    let hook;
-
-    if (moduleIdentifier) {
-      // server build
-      hook = function (context) {
-        // 2.3 injection
-        context = context || // cached call
-        this.$vnode && this.$vnode.ssrContext || // stateful
-        this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext; // functional
-        // 2.2 with runInNewContext: true
-
-        if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-          context = __VUE_SSR_CONTEXT__;
-        } // inject component styles
-
-
-        if (injectStyle) {
-          injectStyle.call(this, createInjectorSSR(context));
-        } // register component module identifier for async chunk inference
-
-
-        if (context && context._registeredComponents) {
-          context._registeredComponents.add(moduleIdentifier);
-        }
-      }; // used by ssr in case component is cached and beforeCreate
-      // never gets called
-
-
-      options._ssrRegister = hook;
-    } else if (injectStyle) {
-      hook = isShadowMode ? function () {
-        injectStyle.call(this, createInjectorShadow(this.$root.$options.shadowRoot));
-      } : function (context) {
-        injectStyle.call(this, createInjector(context));
-      };
-    }
-
-    if (hook) {
-      if (options.functional) {
-        // register for functional component in vue file
-        const originalRender = options.render;
-
-        options.render = function renderWithStyleInjection(h, context) {
-          hook.call(context);
-          return originalRender(h, context);
-        };
-      } else {
-        // inject component registration as beforeCreate hook
-        const existing = options.beforeCreate;
-        options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
-      }
-    }
-
-    return defaultExport;
+    }, 8
+    /* PROPS */
+    , ["class"]);
   }
 
-  /* script */
-  const __vue_script__ = script;
-  // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
-  script.__file = "/Users/user/projects/vue-popper/src/component/popper.js.vue";
-  /* template */
-  var __vue_render__ = function() {
-    var _vm = this;
-    var _h = _vm.$createElement;
-    var _c = _vm._self._c || _h;
-    return _c(
-      _vm.tagName,
-      { tag: "component" },
-      [
-        _c(
-          "transition",
-          {
-            attrs: {
-              name: _vm.transition,
-              "enter-active-class": _vm.enterActiveClass,
-              "leave-active-class": _vm.leaveActiveClass
-            },
-            on: { "after-leave": _vm.doDestroy }
-          },
-          [
-            _c(
-              "span",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: !_vm.disabled && _vm.showPopper,
-                    expression: "!disabled && showPopper"
-                  }
-                ],
-                ref: "popper",
-                class: _vm.rootClass
-              },
-              [_vm._t("default", [_vm._v(_vm._s(_vm.content))])],
-              2
-            )
-          ]
-        ),
-        _vm._v(" "),
-        _vm._t("reference")
-      ],
-      2
-    )
-  };
-  var __vue_staticRenderFns__ = [];
-  __vue_render__._withStripped = true;
+  script.render = render;
 
-    /* style */
-    const __vue_inject_styles__ = undefined;
-    /* scoped */
-    const __vue_scope_id__ = undefined;
-    /* module identifier */
-    const __vue_module_identifier__ = undefined;
-    /* functional template */
-    const __vue_is_functional_template__ = false;
-    /* style inject */
-    
-    /* style inject SSR */
-    
-
-    
-    var VuePopper = normalizeComponent(
-      { render: __vue_render__, staticRenderFns: __vue_staticRenderFns__ },
-      __vue_inject_styles__,
-      __vue_script__,
-      __vue_scope_id__,
-      __vue_is_functional_template__,
-      __vue_module_identifier__,
-      undefined,
-      undefined
-    );
-
-  return VuePopper;
+  return script;
 
 }));

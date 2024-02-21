@@ -13,10 +13,13 @@ export default {
     name: 'VuePopper',
   },
   plugins: [
-    postcss({ extract: true }),
     vue({
       template: {},
       css: false,
+    }),
+    postcss({
+      extract: !isProduction ? 'vue-popper.css' : 'vue-popper.min.css',
+      minimize: isProduction,
     }),
     babel({
       runtimeHelpers: true,

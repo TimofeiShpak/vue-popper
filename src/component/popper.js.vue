@@ -85,10 +85,14 @@
         ref="popper"
         :class="rootClass"
         v-show="!disabled && showPopper">
-        <slot>{{ content }}</slot>
+
+          <slot>{{ content }}</slot>
+
       </span>
     </transition>
-    <slot name="reference"></slot>
+    <div ref="reference">
+      <slot name="reference"></slot>
+    </div>
   </component>
 </template>
 
