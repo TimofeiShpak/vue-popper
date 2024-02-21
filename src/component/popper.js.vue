@@ -177,7 +177,8 @@
       rootClass: {
         type: String,
         default: ''
-      }
+      },
+      parentSelector: String
     },
 
     data() {
@@ -228,6 +229,7 @@
     created() {
       this.appendedArrow = false;
       this.appendedToBody = false;
+      this.parentElement = null;
       this.popperOptions = Object.assign(this.popperOptions, this.options);
     },
 
@@ -295,7 +297,11 @@
           this.popperJS = null;
         }
 
-        if (this.appendedToBody) {
+        if (this.parentElement) {
+            this.parentElement.removeChild(this.popper.parentElement);
+            this.parentElement = null;
+        }
+        else if (this.appendedToBody) {
           this.appendedToBody = false;
           document.body.removeChild(this.popper.parentElement);
         }
@@ -307,7 +313,13 @@
             this.appendArrow(this.popper);
           }
 
-          if (this.appendToBody && !this.appendedToBody) {
+          if (this.parentSelector) {
+            this.parentElement = document.querySelector(this.parentSelector);
+          }
+          if (this.parentElement) {
+            this.parentElement.appendChild(this.popper.parentElement);
+          }
+          else if (this.appendToBody && !this.appendedToBody) {
             this.appendedToBody = true;
             document.body.appendChild(this.popper.parentElement);
           }
